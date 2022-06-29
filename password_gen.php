@@ -14,7 +14,7 @@ function random_string(int $length, string $char_set){
     return $output;
 }
 
-function generate_password(int $length){
+function generate_password($length){
     // DEFINE CHARACTER SETS
     $lower = implode(range('a', 'z'));
     $upper = strtoupper($lower);
@@ -22,20 +22,29 @@ function generate_password(int $length){
     $symbols = '$*?@-!';
 
     // WHICH SET OF CHARS ARE NEEDED
-    $user_lower = true;
+    $user_lower = isset($_GET['lower']) ? $_GET['lower'] : '0';
     $use_upper = true;
     $use_numbers = true;
     $use_symbols = true;
 
     // CREATE THE CHARS SET
     $chars = '';
-    if($user_lower === true) { $chars .= $lower; }
+    if($user_lower === '1') { $chars .= $lower; }
     if($use_upper === true) { $chars .= $upper; }
     if($use_numbers === true) { $chars .= $numbers; }
     if($use_symbols === true) { $chars .= $symbols; }
     
     return random_string($length, $chars);
 }
+
+$uppercase = $_GET['upper'];
+$lowercase = $_GET['lower'];
+$numbers = $_GET['numbers'];
+$symbols = $_GET['symbols'];
+$length = $_GET['length'];
+
+$password = generate_password(8);
+
 ?>
 
 <!doctype html>
@@ -53,15 +62,20 @@ function generate_password(int $length){
 </head>
 <body>
 <div class="container-fluid">
-    <p>Generated Password: <?= $password; ?></p>
+    <p>Generated Password: <?php echo $password; ?></p>
 
     <p>Generate a new password using the form options.</p>
 
     <form>
-        Length:<input type="text" name="length" id="length"><br>
-        <input type="checkbox" name="lower" id="lower" value="1"> Lowercase<br>
-        <input type="checkbox" name="upper" id="upper" value="1"> Uppercase<br>
-        <input type="checkbox" name="numbers" id="numbers" value="1"> Numbers<br>
+        Length:<input type="text" name="length" id="length" value="<?php if(isset($_GET['length'])){
+        echo $_GET['length']; }?>"><br>
+        <input type="checkbox" name="lower" id="lower" value="1" <?php if(isset($_GET['lower']))
+        { echo 'checked'; }?>> Lowercase<br>
+        <input type="checkbox" name="upper" id="upper" value="1" <?php if(isset($_GET['upper'])){
+        echo 'checked'; }?>> Uppercase<br>
+        <input type="checkbox" name="numbers" id="numbers" value="1" <?php if(isset($_GET['numbers'])){
+            echo 'checked';
+        }?>> Numbers<br>
         <input type="checkbox" name="symbols" id="symbols" value="1"> Symbols<br>
         <input type="submit" id="submit" value="Submit">
     </form>
@@ -75,7 +89,7 @@ function generate_password(int $length){
             let symbols = $('#symbols').val();
             let length = $('#length').val();
 
-            if(length == ''){ alert("Please fill in the length..."); return false; }
+            //if(length == ''){ alert("Please fill in the length..."); return false; }
 
             $.ajax({
                type: "GET",
@@ -86,14 +100,8 @@ function generate_password(int $length){
                    numbers: numbers,
                    symbols: symbols,
                    length: length
-               },
-                cache: false,
-                success: function(data){
-                   alert(data);
-                },
-                error: function (xhr, status, error) {
-                   console.error(xhr);
-                }
+               }
+
             });
         });
     });
