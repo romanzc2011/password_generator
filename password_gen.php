@@ -1,12 +1,14 @@
 <?php
 
-
-function random_char(string $string){
+function random_char($string){
     $i = random_int(0, strlen($string)-1);
     return $string[$i];
 }
 
-function random_string(int $length, string $char_set){
+function random_string($length, $char_set){
+    if($char_set == null){
+        $char_set = '0';
+    }
     $output = "";
     for($i=0; $i < $length; $i++){
         $output .= random_char($char_set);
@@ -14,37 +16,41 @@ function random_string(int $length, string $char_set){
     return $output;
 }
 
-function generate_password($length){
+function generate_password($options){
     // DEFINE CHARACTER SETS
     $lower = implode(range('a', 'z'));
     $upper = strtoupper($lower);
     $numbers = implode(range(0,9));
     $symbols = '$*?@-!';
+    $length = isset($options['length']) ? intval($options['length']) : 8;
 
     // WHICH SET OF CHARS ARE NEEDED
-    $user_lower = isset($_GET['lower']) ? $_GET['lower'] : '0';
-    $use_upper = isset($_GET['upper']) ? $_GET['upper'] : '0';
-    $use_numbers = true;
-    $use_symbols = true;
+    $use_lower = isset($options['lower']) ? $options['lower'] : '0';
+    $use_upper = isset($options['upper']) ? $options['upper'] : '0';
+    $use_numbers = isset($options['numbers']) ? $options['numbers'] : '0';
+    $use_symbols = isset($options['symbols']) ? $options['symbols'] : '0';
+
 
     // CREATE THE CHARS SET
     $chars = '';
-    if($user_lower === '1') { $chars .= $lower; }
+    if($use_lower === '1') { $chars .= $lower; }
     if($use_upper === '1') { $chars .= $upper; }
-    if($use_numbers === true) { $chars .= $numbers; }
-    if($use_symbols === true) { $chars .= $symbols; }
-    
+    if($use_numbers === '1') { $chars .= $numbers; }
+    if($use_symbols === '1') { $chars .= $symbols; }
+
     return random_string($length, $chars);
 }
 
-$uppercase = $_GET['upper'];
-$lowercase = $_GET['lower'];
-$numbers = $_GET['numbers'];
-$symbols = $_GET['symbols'];
-$length = $_GET['length'];
+$options = array(
+        'length' => isset($_GET['length']) ? $_GET['length'] : 0,
+        'upper' => isset($_GET['upper']) ? $_GET['upper'] : '0',
+        'lower' => isset($_GET['lower']) ? $_GET['lower'] : '0',
+        'numbers' => isset($_GET['numbers']) ? $_GET['numbers'] : '0',
+        'symbols' => isset($_GET['symbols']) ? $_GET['symbols'] : '0'
+);
 
-$password = generate_password(8);
 
+$password = generate_password($options);
 ?>
 
 <!doctype html>
@@ -62,21 +68,18 @@ $password = generate_password(8);
 </head>
 <body>
 <div class="container-fluid">
-    <p>Generated Password: <?php echo $password; ?></p>
+    <p>Generated Password: <?php echo $password; ?> </p>
 
     <p>Generate a new password using the form options.</p>
 
     <form>
         Length:<input type="text" name="length" id="length" value="<?php if(isset($_GET['length'])){
-        echo $_GET['length']; }?>"><br>
-        <input type="checkbox" name="lower" id="lower" value="1" <?php if(isset($_GET['lower']))
-        { echo 'checked'; }?>> Lowercase<br>
-        <input type="checkbox" name="upper" id="upper" value="1" <?php if(isset($_GET['upper'])){
-        echo 'checked'; }?>> Uppercase<br>
-        <input type="checkbox" name="numbers" id="numbers" value="1" <?php if(isset($_GET['numbers'])){
-            echo 'checked';
-        }?>> Numbers<br>
-        <input type="checkbox" name="symbols" id="symbols" value="1"> Symbols<br>
+            echo $_GET['length'];
+        } ?>"><br>
+        <input type="checkbox" name="lower" id="lower" value="1" <?php if(isset($_GET['lower'])){ echo 'checked'; }?>> Lowercase<br>
+        <input type="checkbox" name="upper" id="upper" value="1" <?php if(isset($_GET['upper'])){ echo 'checked'; }?>> Uppercase<br>
+        <input type="checkbox" name="numbers" id="numbers" value="1" <?php if(isset($_GET['numbers'])){ echo 'checked';}?>> Numbers<br>
+        <input type="checkbox" name="symbols" id="symbols" value="1" <?php if(isset($_GET['symbols'])){ echo 'checked';}?>> Symbols<br>
         <input type="submit" id="submit" value="Submit">
     </form>
 </div>
@@ -89,7 +92,7 @@ $password = generate_password(8);
             let symbols = $('#symbols').val();
             let length = $('#length').val();
 
-            //if(length == ''){ alert("Please fill in the length..."); return false; }
+            if(length == ''){ alert("Please fill in the length..."); return false; }
 
             $.ajax({
                type: "GET",
@@ -101,10 +104,10 @@ $password = generate_password(8);
                    symbols: symbols,
                    length: length
                }
-
             });
         });
     });
 </script>
 </body>
 </html>
+
