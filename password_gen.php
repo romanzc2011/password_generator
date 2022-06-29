@@ -23,14 +23,14 @@ function generate_password($length){
 
     // WHICH SET OF CHARS ARE NEEDED
     $user_lower = isset($_GET['lower']) ? $_GET['lower'] : '0';
-    $use_upper = true;
+    $use_upper = isset($_GET['upper']) ? $_GET['upper'] : '0';
     $use_numbers = true;
     $use_symbols = true;
 
     // CREATE THE CHARS SET
     $chars = '';
     if($user_lower === '1') { $chars .= $lower; }
-    if($use_upper === true) { $chars .= $upper; }
+    if($use_upper === '1') { $chars .= $upper; }
     if($use_numbers === true) { $chars .= $numbers; }
     if($use_symbols === true) { $chars .= $symbols; }
     
